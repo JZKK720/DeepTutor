@@ -61,16 +61,19 @@ services:
       # ============================================
       # Service Ports Configuration
       # ============================================
-      # Backend API port (default: 8001)
+      # Backend API port (container internal, default: 8001)
       - BACKEND_PORT=${BACKEND_PORT:-8001}
-      # Frontend web port (default: 3782)
+      # Frontend web port (container internal, default: 3782)
       - FRONTEND_PORT=${FRONTEND_PORT:-3782}
+      # Host-exposed ports (for frontend to know external access URLs)
+      - HOST_BACKEND_PORT=8681
+      - HOST_FRONTEND_PORT=3781
       # ============================================
       # API URL Configuration (Important for Cloud Deployment)
       # ============================================
       # For CLOUD/REMOTE deployment: Set this to your server's public URL
       # Example: https://your-server.com:8001 or https://api.yourdomain.com
-      # If not set, defaults to http://localhost:${BACKEND_PORT} (only works locally)
+      # If not set, defaults to http://host.docker.internal:8681 (Docker setup)
       - NEXT_PUBLIC_API_BASE_EXTERNAL=${NEXT_PUBLIC_API_BASE_EXTERNAL:-}
       # Alternative: Direct API base URL (same priority as NEXT_PUBLIC_API_BASE_EXTERNAL)
       - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-}

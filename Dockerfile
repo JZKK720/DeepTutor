@@ -95,7 +95,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NODE_ENV=production \
     # Default ports (can be overridden)
     BACKEND_PORT=8001 \
-    FRONTEND_PORT=3782
+    FRONTEND_PORT=3782 \
+    # Exposed host ports for frontend to use
+    HOST_BACKEND_PORT=8681 \
+    HOST_FRONTEND_PORT=3781
 
 WORKDIR /app
 
@@ -218,7 +221,7 @@ BACKEND_PORT=${BACKEND_PORT:-8001}
 FRONTEND_PORT=${FRONTEND_PORT:-3782}
 
 # Determine the API base URL with multiple fallback options
-# Priority: NEXT_PUBLIC_API_BASE_EXTERNAL > NEXT_PUBLIC_API_BASE > auto-detect
+# Priority: NEXT_PUBLIC_API_BASE_EXTERNAL > NEXT_PUBLIC_API_BASE > host.docker.internal > localhost
 if [ -n "$NEXT_PUBLIC_API_BASE_EXTERNAL" ]; then
     # Explicit external URL for cloud deployments
     API_BASE="$NEXT_PUBLIC_API_BASE_EXTERNAL"
@@ -228,12 +231,11 @@ elif [ -n "$NEXT_PUBLIC_API_BASE" ]; then
     API_BASE="$NEXT_PUBLIC_API_BASE"
     echo "[Frontend] 📌 Using custom API URL: ${API_BASE}"
 else
-    # Default: localhost with configured backend port
-    # Note: This only works for local development, not cloud deployments
-    API_BASE="http://localhost:${BACKEND_PORT}"
-    echo "[Frontend] 📌 Using default API URL: ${API_BASE}"
+    # For Docker: Use host.docker.internal to reach backend on host
+    # This allows frontend (in browser) to access backend via host port 8681
+    API_BASE="http://host.docker.internal:8681"
+    echo "[Frontend] 📌 Using Docker host API URL: ${API_BASE}"
     echo "[Frontend] ⚠️  For cloud deployment, set NEXT_PUBLIC_API_BASE_EXTERNAL to your server's public URL"
-    echo "[Frontend]    Example: -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:${BACKEND_PORT}"
 fi
 
 echo "[Frontend] 🚀 Starting Next.js frontend on port ${FRONTEND_PORT}..."

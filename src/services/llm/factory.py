@@ -32,6 +32,7 @@ Retry Mechanism:
 """
 
 import asyncio
+import os
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 import tenacity
@@ -414,25 +415,25 @@ API_PROVIDER_PRESETS = {
 LOCAL_PROVIDER_PRESETS = {
     "ollama": {
         "name": "Ollama",
-        "base_url": "http://localhost:11434/v1",
+        "base_url": "http://host.docker.internal:11434/v1",
         "requires_key": False,
         "default_key": "ollama",
     },
     "lm_studio": {
         "name": "LM Studio",
-        "base_url": "http://localhost:1234/v1",
+        "base_url": "http://host.docker.internal:14321/v1",
         "requires_key": False,
         "default_key": "lm-studio",
     },
     "vllm": {
         "name": "vLLM",
-        "base_url": "http://localhost:8000/v1",
+        "base_url": f"http://localhost:{os.environ.get('VLLM_PORT', '8000')}/v1",
         "requires_key": False,
         "default_key": "vllm",
     },
     "llama_cpp": {
         "name": "llama.cpp",
-        "base_url": "http://localhost:8080/v1",
+        "base_url": f"http://localhost:{os.environ.get('LLAMACPP_PORT', '8080')}/v1",
         "requires_key": False,
         "default_key": "llama-cpp",
     },

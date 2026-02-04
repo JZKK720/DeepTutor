@@ -28,8 +28,8 @@ services:
     container_name: deeptutor
     restart: unless-stopped
     ports:
-      - "${BACKEND_PORT:-8001}:${BACKEND_PORT:-8001}"
-      - "${FRONTEND_PORT:-3782}:${FRONTEND_PORT:-3782}"
+      - "8681:8001"
+      - "3781:3782"
 
     # Load environment variables from .env file
     env_file:

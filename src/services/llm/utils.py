@@ -9,6 +9,7 @@ Utility functions for LLM service:
 - Thinking tags cleaning
 """
 
+import os
 import re
 from typing import Any, Optional
 
@@ -28,12 +29,15 @@ CLOUD_DOMAINS = [
     ".perplexity.ai",
 ]
 
-# Common local server ports
+# Common local server ports (configurable via environment variables)
+VLLM_PORT = os.environ.get("VLLM_PORT", "8000")
+LLAMACPP_PORT = os.environ.get("LLAMACPP_PORT", "8080")
+
 LOCAL_PORTS = [
-    ":1234",  # LM Studio
-    ":11434",  # Ollama
-    ":8000",  # vLLM
-    ":8080",  # llama.cpp
+    ":14321",  # LM Studio (docker host)
+    ":11434",  # Ollama (docker host)
+    f":{VLLM_PORT}",  # vLLM (configurable via VLLM_PORT env var)
+    f":{LLAMACPP_PORT}",  # llama.cpp (configurable via LLAMACPP_PORT env var)
     ":5000",  # Common dev port
     ":3000",  # Common dev port
     ":8001",  # Alternative vLLM
@@ -50,10 +54,10 @@ LOCAL_HOSTS = [
 # Ports that need /v1 suffix for OpenAI compatibility
 V1_SUFFIX_PORTS = {
     ":11434",  # Ollama
-    ":1234",  # LM Studio
-    ":8000",  # vLLM
+    ":14321",  # LM Studio (docker host)
+    f":{VLLM_PORT}",  # vLLM (configurable via VLLM_PORT env var)
     ":8001",  # Alternative vLLM
-    ":8080",  # llama.cpp
+    f":{LLAMACPP_PORT}",  # llama.cpp (configurable via LLAMACPP_PORT env var)
 }
 
 

@@ -460,7 +460,19 @@ network_mode: host
 
 ---
 
-## 🎯 Quick Reference Commands
+## 🚀 Quick Start Guide
+
+### Step 1: Create Environment File
+
+```bash
+# Copy the example file (choose one)
+cp .env.example .env          # English version
+cp .env.example_CN .env       # Chinese version (中文版)
+```
+
+### Step 2: Start Container (Minimum Setup)
+
+**You can start the container WITHOUT API keys!** The container will run with warnings.
 
 ```bash
 # Start services with custom ports
@@ -472,20 +484,64 @@ docker logs -f deeptutor
 # Check port mappings
 docker ps
 
-# Test backend
+# Check logs
+docker logs -f deeptutor
+
+# Test backend (should return: {"message":"Welcome to DeepTutor API"})
 curl http://localhost:8681/
 
-# Test frontend
-curl http://localhost:3781
+# Open frontend in browser
+http://localhost:3781
 
-# Access container shell
-docker exec -it deeptutor bash
+### Step 3: Configure API Keys (After Container Runs)
+
+Edit `.env` file with your actual API keys:
+
+```bash
+# Example: DeepSeek Configuration
+LLM_BINDING=deepseek
+LLM_MODEL=deepseek-chat
+LLM_API_KEY=sk-your-deepseek-api-key
+LLM_HOST=https://api.deepseek.com
+
+# Embedding (for knowledge base)
+EMBEDDING_BINDING=openai
+EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_API_KEY=sk-your-key
+EMBEDDING_HOST=https://api.openai.com/v1
+EMBEDDING_DIMENSION=3072
+```
+
+Then restart to apply:
+```bash
+docker compose restart
+```
+
+### Container Status Without API Keys
+
+| Component | Status | Note |
+|-----------|--------|------|
+| Container | ✅ Runs | Shows warnings for missing keys |
+| Frontend | ✅ Accessible | http://localhost:3781 |
+| Backend | ✅ Responds | http://localhost:8681 |
+| AI Features | ❌ Not working | Need valid API keys |
+
+---
+
+## 🎯 Quick Reference Commands
+
+```bash
+# Start services with custom ports
+docker compose up -d
 
 # Check environment inside container
 docker exec deeptutor env | grep PORT
 
 # Test local LLM from container
 docker exec deeptutor curl host.docker.internal:11434
+
+# Access container shell
+docker exec -it deeptutor bash
 ```
 
 ---

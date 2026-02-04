@@ -415,7 +415,7 @@ API_PROVIDER_PRESETS = {
 LOCAL_PROVIDER_PRESETS = {
     "ollama": {
         "name": "Ollama",
-        "base_url": "http://host.docker.internal:11434/v1",
+        "base_url": "http://host.docker.internal:11434",
         "requires_key": False,
         "default_key": "ollama",
     },

@@ -165,7 +165,7 @@ LLAMACPP_PORT=8080
 
 ```bash
 # For local LLM providers in Docker, use host.docker.internal:
-# - Ollama: http://host.docker.internal:11434/v1
+# - Ollama: http://host.docker.internal:11434 (native API, no /v1)
 # - LM Studio: http://host.docker.internal:14321/v1
 # - vLLM: http://host.docker.internal:8000/v1
 # - llama.cpp: http://host.docker.internal:8080/v1
@@ -180,7 +180,7 @@ LLM_HOST=https://api.openai.com/v1
 
 | Provider | Old URL | New URL | Port Type |
 |----------|---------|---------|-----------|
-| **Ollama** | `localhost:11434` | `host.docker.internal:11434` | Standard |
+| **Ollama** | `localhost:11434` | `host.docker.internal:11434` | Native API (no /v1) |
 | **LM Studio** | `localhost:1234` | `host.docker.internal:14321` | Custom |
 | **vLLM** | `localhost:8000` | `localhost:${VLLM_PORT}` | Env Configurable |
 | **llama.cpp** | `localhost:8080` | `localhost:${LLAMACPP_PORT}` | Env Configurable |

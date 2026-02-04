@@ -484,8 +484,10 @@ docker logs -f deeptutor
 # Check port mappings
 docker ps
 
-# Check logs
-docker logs -f deeptutor
+# Check logs (container name will be deeptutor-docker-deeptutor-1)
+docker logs -f deeptutor-docker-deeptutor-1
+# or
+docker compose -f docker-compose.yml -p deeptutor-docker logs -f
 
 # Test backend (should return: {"message":"Welcome to DeepTutor API"})
 curl http://localhost:8681/
@@ -514,7 +516,7 @@ EMBEDDING_DIMENSION=3072
 
 Then restart to apply:
 ```bash
-docker compose restart
+docker compose -f docker-compose.yml -p deeptutor-docker restart
 ```
 
 ### Container Status Without API Keys
@@ -541,7 +543,7 @@ docker exec deeptutor env | grep PORT
 docker exec deeptutor curl host.docker.internal:11434
 
 # Access container shell
-docker exec -it deeptutor bash
+docker exec -it deeptutor-docker-deeptutor-1 bash
 ```
 
 ---

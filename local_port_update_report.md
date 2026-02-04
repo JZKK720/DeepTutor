@@ -78,6 +78,18 @@ ports:
   - "3781:3782"
 ```
 
+#### Auto-Restart Policy
+
+| Setting | Value | Behavior |
+|---------|-------|----------|
+| **restart** | `unless-stopped` | Auto-restart on crash, Docker restart, or system reboot |
+
+**When it restarts automatically:**
+- ✅ Container crashes unexpectedly
+- ✅ Docker daemon restarts
+- ✅ System reboots
+- ❌ Manually stopped (`docker stop`)
+
 #### Environment Variables Added
 
 ```yaml

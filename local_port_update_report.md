@@ -1,8 +1,8 @@
 # DeepTutor Local Port Configuration Update Report
 
 **Generated:** 2026-02-04  
-**Updated:** 2026-02-04  
-**Purpose:** Document complete port customization to avoid local container conflicts
+**Updated:** 2026-02-05  
+**Purpose:** Document complete port customization to avoid local container conflicts, including SSR fix for Docker
 
 ---
 
@@ -18,6 +18,7 @@ This report documents the comprehensive port configuration changes made to DeepT
 | Dockerfile | 1 | Frontend startup script, API base URL |
 | Environment Config | 2 | Host port documentation |
 | LLM Provider Config | 2 | host.docker.internal endpoints |
+| Frontend Code | 1 | SSR port handling in `web/lib/api.ts` |
 | Documentation | 1 | This report |
 
 ---
@@ -386,6 +387,47 @@ netstat -ano | findstr :8681  # Windows
 2. Check frontend logs: `docker logs deeptutor | grep Frontend`
 3. Ensure API_BASE is set correctly (should be `host.docker.internal:8681`)
 
+### Issue: SSR - "Cannot connect to backend at localhost:8681"
+
+**Symptoms:**
+- Error on knowledge base page: `Network error: Cannot connect to backend at http://localhost:8681/`
+- Happens during Server-Side Rendering (SSR) inside Docker container
+
+**Root Cause:**
+- Next.js SSR runs inside the container and tries to connect to `localhost:8681`
+- Port 8681 is only mapped on the **host**, not inside the container
+- Inside container, backend is only available on port 8001
+
+**Solutions:**
+
+**Option 1: Rebuild with the fix (Recommended)**
+```bash
+docker compose down
+docker compose up -d --build
+```
+
+**Option 2: Temporary workaround (without rebuild)**
+Start a proxy inside the container to forward port 8681→8001:
+```bash
+# Copy proxy script to container
+docker cp proxy.py deeptutor:/app/proxy.py
+
+# Start proxy in background
+docker exec -d deeptutor python3 /app/proxy.py
+
+# Verify it works
+docker exec deeptutor curl -s http://localhost:8681/
+```
+
+**Option 3: Modify `web/lib/api.ts`**
+The fix adds SSR detection to use internal port:
+```typescript
+if (typeof window === "undefined") {
+  // Server-side: use internal port
+  return publicBase.replace(/:\d+$/, ":8001");
+}
+```
+
 ### Issue: Local LLM Not Accessible from Container
 
 **Checks:**
@@ -428,6 +470,7 @@ network_mode: host
 |------|--------------|-------------|
 | `src/services/llm/factory.py` | 4 URLs updated | host.docker.internal endpoints |
 | `src/services/llm/utils.py` | Env var support | Dynamic port configuration |
+| `web/lib/api.ts` | +15 lines | SSR port handling for Docker |
 
 ### Documentation Files
 
@@ -456,6 +499,15 @@ network_mode: host
 - **Added:** `HOST_BACKEND_PORT=8681` and `HOST_FRONTEND_PORT=3781` to docker-compose environment
 - **Updated:** Comments in docker-compose.yml to clarify port usage
 - **Updated:** .env.example and .env.example_CN with host port documentation
+
+### 2026-02-05 - SSR (Server-Side Rendering) Fix
+
+- **Fixed:** `web/lib/api.ts` to handle SSR inside Docker container correctly
+  - Client-side (browser): Uses `localhost:8681` (host port)
+  - Server-side (container): Uses `localhost:8001` (internal port)
+- **Problem:** Next.js SSR was trying to connect to `localhost:8681` inside container, but only port 8001 exists internally
+- **Solution:** Added runtime check `typeof window === "undefined"` to detect SSR and switch to internal port
+- **Workaround:** For existing containers without rebuild, a TCP proxy can forward port 8681→8001 inside the container
 
 ---
 

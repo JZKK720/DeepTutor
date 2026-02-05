@@ -3,9 +3,13 @@
 // Get API base URL from environment variable
 // This is automatically set by start_web.py based on config/main.yaml
 // The .env.local file is auto-generated on startup with the correct backend port
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE ||
-  (() => {
+
+// For server-side rendering inside Docker container, use internal backend port
+// For client-side (browser), use the external port exposed by Docker
+const getApiBaseUrl = (): string => {
+  const publicBase = process.env.NEXT_PUBLIC_API_BASE;
+  
+  if (!publicBase) {
     if (typeof window !== "undefined") {
       console.error("NEXT_PUBLIC_API_BASE is not set.");
       console.error(
@@ -15,11 +19,22 @@ export const API_BASE_URL =
         "The .env.local file will be automatically generated with the correct backend port.",
       );
     }
-    // No fallback - port must be configured in config/main.yaml
     throw new Error(
       "NEXT_PUBLIC_API_BASE is not configured. Please set server ports in config/main.yaml and restart.",
     );
-  })();
+  }
+
+  // On server-side (inside Docker container), use internal port 8001
+  // On client-side (browser), use the public base URL (localhost:8681)
+  if (typeof window === "undefined") {
+    // Server-side: replace external port with internal backend port
+    return publicBase.replace(/:\d+$/, ":8001");
+  }
+  
+  return publicBase;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Construct a full API URL from a path

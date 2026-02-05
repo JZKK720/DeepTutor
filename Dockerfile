@@ -221,7 +221,7 @@ BACKEND_PORT=${BACKEND_PORT:-8001}
 FRONTEND_PORT=${FRONTEND_PORT:-3782}
 
 # Determine the API base URL with multiple fallback options
-# Priority: NEXT_PUBLIC_API_BASE_EXTERNAL > NEXT_PUBLIC_API_BASE > host.docker.internal > localhost
+# Priority: NEXT_PUBLIC_API_BASE_EXTERNAL > NEXT_PUBLIC_API_BASE > localhost (default for Docker)
 if [ -n "$NEXT_PUBLIC_API_BASE_EXTERNAL" ]; then
     # Explicit external URL for cloud deployments
     API_BASE="$NEXT_PUBLIC_API_BASE_EXTERNAL"
@@ -231,10 +231,10 @@ elif [ -n "$NEXT_PUBLIC_API_BASE" ]; then
     API_BASE="$NEXT_PUBLIC_API_BASE"
     echo "[Frontend] 📌 Using custom API URL: ${API_BASE}"
 else
-    # For Docker: Use host.docker.internal to reach backend on host
-    # This allows frontend (in browser) to access backend via host port 8681
-    API_BASE="http://host.docker.internal:8681"
-    echo "[Frontend] 📌 Using Docker host API URL: ${API_BASE}"
+    # For Docker: Use localhost to reach backend from browser
+    # The browser (on host) connects to backend via published port 8681
+    API_BASE="http://localhost:8681"
+    echo "[Frontend] 📌 Using Docker localhost API URL: ${API_BASE}"
     echo "[Frontend] ⚠️  For cloud deployment, set NEXT_PUBLIC_API_BASE_EXTERNAL to your server's public URL"
 fi
 

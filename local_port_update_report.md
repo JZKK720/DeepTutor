@@ -458,19 +458,22 @@ network_mode: host
 
 | File | Lines Changed | Description |
 |------|--------------|-------------|
-| `docker-compose.yml` | Port mappings, env vars | Fixed host→container port mapping |
+| `docker-compose.yml` | Port mappings, env vars, extra_hosts | Fixed host→container port mapping, added host.docker.internal support |
 | `docker-compose.dev.yml` | Unchanged | Inherits main compose config |
 | `Dockerfile` | Frontend startup script | Fixed API base URL for Docker |
 | `.env.example` | +25 lines | Added HOST_*_PORT documentation |
 | `.env.example_CN` | +25 lines | Chinese documentation added |
+| `.env` | Updated | Configured for local LLM providers (Ollama/LM Studio) |
 
 ### Source Code Files
 
 | File | Lines Changed | Description |
 |------|--------------|-------------|
-| `src/services/llm/factory.py` | 4 URLs updated | host.docker.internal endpoints |
+| `src/services/llm/factory.py` | 4 URLs updated | host.docker.internal endpoints for local LLMs |
 | `src/services/llm/utils.py` | Env var support | Dynamic port configuration |
+| `src/services/llm/config.py` | Environment loading | LLM configuration from env vars |
 | `web/lib/api.ts` | +15 lines | SSR port handling for Docker |
+| `scripts/proxy_8681.py` | New file | TCP proxy workaround for SSR (temporary) |
 
 ### Documentation Files
 
@@ -508,6 +511,18 @@ network_mode: host
 - **Problem:** Next.js SSR was trying to connect to `localhost:8681` inside container, but only port 8001 exists internally
 - **Solution:** Added runtime check `typeof window === "undefined"` to detect SSR and switch to internal port
 - **Workaround:** For existing containers without rebuild, a TCP proxy can forward port 8681→8001 inside the container
+
+### 2026-02-05 - Local LLM Configuration Update
+
+- **Fixed:** `.env` file configured for local LLM providers (Ollama/LM Studio)
+  - LLM_BINDING: `ollama` or `lm_studio`
+  - LLM_HOST: `http://host.docker.internal:11434` (Ollama) or `http://host.docker.internal:14321/v1` (LM Studio)
+  - EMBEDDING_BINDING: `ollama` or `lm_studio`
+  - EMBEDDING_HOST: Same as LLM_HOST
+  - EMBEDDING_DIMENSION: `768` (Ollama nomic-embed-text) or `1536` (LM Studio)
+- **Added:** `extra_hosts` to docker-compose.yml for `host.docker.internal` support
+- **Updated:** LM Studio port from default to customized `14321`
+- **Note:** Ollama/LM Studio must bind to `0.0.0.0` (not just `127.0.0.1`) for Docker to access
 
 ---
 

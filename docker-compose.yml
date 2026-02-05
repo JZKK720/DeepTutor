@@ -32,6 +32,11 @@ services:
     ports:
       - "8681:8001"
       - "3781:3782"
+    
+    # Enable access to host machine for local LLM providers (Ollama, LM Studio, etc.)
+    # Required for Windows/Linux Docker to use host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     # Load environment variables from .env file
     env_file:

@@ -14,16 +14,26 @@ This report documents the comprehensive port configuration changes made to DeepT
 
 | Category | Files Modified | Key Changes |
 |----------|---------------|-------------|
-| Docker Compose | 2 | Port mappings, environment variables |
-| Dockerfile | 1 | Frontend startup script, API base URL |
-| Environment Config | 2 | Host port documentation |
-| LLM Provider Config | 2 | host.docker.internal endpoints |
-| Frontend Code | 1 | SSR port handling in `web/lib/api.ts` |
-| Documentation | 1 | This report |
+| Docker Compose | 1 | Port mappings (8681:8001, 3781:3782), extra_hosts for host.docker.internal |
+| Dockerfile | 1 | Frontend startup script, API base URL (localhost:8681) |
+| Environment Config | 3 | Host port documentation, local LLM configuration (Ollama/LM Studio) |
+| LLM Provider Config | 2 | host.docker.internal endpoints (11434, 14321) |
+| Frontend Code | 1 | SSR port handling in `web/lib/api.ts` (8001 internal, 8681 external) |
+| Scripts | 1 | TCP proxy workaround for SSR (proxy_8681.py) |
+| Documentation | 1 | This comprehensive report |
 
 ---
 
 ## 🔄 Port Mapping Architecture
+
+### Final Port Configuration Summary
+
+| Service | Host Port | Container Port | URL |
+|---------|-----------|----------------|-----|
+| **Frontend** | 3781 | 3782 | http://localhost:3781 |
+| **Backend API** | 8681 | 8001 | http://localhost:8681 |
+| **Ollama** | 11434 | - | http://host.docker.internal:11434 |
+| **LM Studio** | 14321 | - | http://host.docker.internal:14321/v1 |
 
 ### Complete Port Flow
 
@@ -321,6 +331,76 @@ services:
 
 Same process as vLLM, using `LLAMACPP_PORT` environment variable.
 
+---
+
+## 🤖 Local LLM Configuration Guide
+
+### Ollama Setup
+
+**1. Configure Ollama to accept external connections:**
+```powershell
+# Windows
+$env:OLLAMA_HOST="0.0.0.0"
+ollama serve
+
+# Or set system environment variable and restart Ollama
+[Environment]::SetEnvironmentVariable("OLLAMA_HOST", "0.0.0.0", "User")
+```
+
+**2. Update `.env` file:**
+```ini
+LLM_BINDING=ollama
+LLM_MODEL=llama3.2:latest
+LLM_API_KEY=ollama
+LLM_HOST=http://host.docker.internal:11434
+
+EMBEDDING_BINDING=ollama
+EMBEDDING_MODEL=nomic-embed-text:latest
+EMBEDDING_API_KEY=ollama
+EMBEDDING_HOST=http://host.docker.internal:11434
+EMBEDDING_DIMENSION=768
+```
+
+### LM Studio Setup
+
+**1. Enable local network access:**
+- Open LM Studio → Developer tab
+- Enable "Run on Local Network"
+- Set port to `14321` (customized)
+- Restart server
+
+**2. Update `.env` file:**
+```ini
+LLM_BINDING=lm_studio
+LLM_MODEL=your-model-name
+LLM_API_KEY=lm-studio
+LLM_HOST=http://host.docker.internal:14321/v1
+
+EMBEDDING_BINDING=lm_studio
+EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_API_KEY=lm-studio
+EMBEDDING_HOST=http://host.docker.internal:14321/v1
+EMBEDDING_DIMENSION=1536
+```
+
+### Important Notes
+
+| Requirement | Description |
+|-------------|-------------|
+| **Binding** | Ollama/LM Studio must bind to `0.0.0.0`, not just `127.0.0.1` |
+| **Firewall** | Allow port 11434 (Ollama) or 14321 (LM Studio) in Windows Firewall |
+| **Docker** | `host.docker.internal` requires Docker Desktop or `extra_hosts` config |
+
+### Testing Connection
+
+```bash
+# From host machine
+curl http://localhost:11434/api/tags
+
+# From inside container
+docker exec deeptutor curl http://host.docker.internal:11434/api/tags
+```
+
 ### To Change Host Ports (8681, 3781)
 
 Edit `docker-compose.yml`:
@@ -351,9 +431,10 @@ After starting DeepTutor with the new configuration:
 - [ ] llama.cpp reachable (if using): `docker exec deeptutor curl host.docker.internal:${LLAMACPP_PORT}`
 
 ### Log Verification
-- [ ] Frontend logs show: "Using Docker host API URL: http://host.docker.internal:8681"
+- [ ] Frontend logs show: "Using Docker localhost API URL: http://localhost:8681"
 - [ ] Backend logs show: "Starting FastAPI backend on port 8001"
 - [ ] No connection errors in frontend logs when making API calls
+- [ ] SSR works correctly (knowledge base page loads without network errors)
 
 ---
 

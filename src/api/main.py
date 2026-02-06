@@ -159,9 +159,16 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Allow local development and Cloudflare domain
+allowed_origins = [
+    "http://localhost:3781",
+    "http://localhost:3000",
+    "https://itutor.cubecloud.io",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific frontend origin
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

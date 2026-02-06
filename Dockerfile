@@ -220,22 +220,21 @@ set -e
 BACKEND_PORT=${BACKEND_PORT:-8001}
 FRONTEND_PORT=${FRONTEND_PORT:-3782}
 
-# Determine the API base URL with multiple fallback options
-# Priority: NEXT_PUBLIC_API_BASE_EXTERNAL > NEXT_PUBLIC_API_BASE > localhost (default for Docker)
-if [ -n "$NEXT_PUBLIC_API_BASE_EXTERNAL" ]; then
-    # Explicit external URL for cloud deployments
+# Determine the API base URL with a runtime toggle
+# Priority:
+# 1) USE_EXTERNAL_API_BASE=true + NEXT_PUBLIC_API_BASE_EXTERNAL set
+# 2) NEXT_PUBLIC_API_BASE
+# 3) localhost (default for Docker)
+if [ "$USE_EXTERNAL_API_BASE" = "true" ] && [ -n "$NEXT_PUBLIC_API_BASE_EXTERNAL" ]; then
     API_BASE="$NEXT_PUBLIC_API_BASE_EXTERNAL"
-    echo "[Frontend] 📌 Using external API URL: ${API_BASE}"
+    echo "[Frontend] 📌 Using external API URL: ${API_BASE} (USE_EXTERNAL_API_BASE=true)"
 elif [ -n "$NEXT_PUBLIC_API_BASE" ]; then
-    # Custom API base URL
     API_BASE="$NEXT_PUBLIC_API_BASE"
     echo "[Frontend] 📌 Using custom API URL: ${API_BASE}"
 else
-    # For Docker: Use localhost to reach backend from browser
-    # The browser (on host) connects to backend via published port 8781
     API_BASE="http://localhost:8781"
     echo "[Frontend] 📌 Using Docker localhost API URL: ${API_BASE}"
-    echo "[Frontend] ⚠️  For cloud deployment, set NEXT_PUBLIC_API_BASE_EXTERNAL to your server's public URL"
+    echo "[Frontend] ⚠️  For cloud deployment, set USE_EXTERNAL_API_BASE=true and NEXT_PUBLIC_API_BASE_EXTERNAL"
 fi
 
 echo "[Frontend] 🚀 Starting Next.js frontend on port ${FRONTEND_PORT}..."

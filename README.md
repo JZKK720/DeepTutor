@@ -290,6 +290,7 @@ cp .env.example .env
 | `BACKEND_PORT` | No | Backend port (default: `8001`) |
 | `FRONTEND_PORT` | No | Frontend port (default: `3782`) |
 | `NEXT_PUBLIC_API_BASE` | No | **Frontend API URL** - Set this for remote/LAN access (e.g., `http://192.168.1.100:8001`) |
+| `USE_EXTERNAL_API_BASE` | No | Use `NEXT_PUBLIC_API_BASE_EXTERNAL` when `true` (default: `false`) |
 | `TTS_*` | No | Text-to-Speech settings |
 | `SEARCH_PROVIDER` | No | Search provider (options: `perplexity`, `tavily`, `serper`, `jina`, `exa`, `baidu`, default: `perplexity`) |
 | `SEARCH_API_KEY` | No | Unified API key for all search providers |
@@ -298,6 +299,7 @@ cp .env.example .env
 > ```bash
 > NEXT_PUBLIC_API_BASE=http://192.168.31.66:8001
 > ```
+> For public web access, set `USE_EXTERNAL_API_BASE=true` and configure `NEXT_PUBLIC_API_BASE_EXTERNAL`.
 
 </details>
 
@@ -1314,16 +1316,18 @@ The default API URL is `localhost:8001`, which points to the user's local machin
 
 **Solution**
 
-Set the `NEXT_PUBLIC_API_BASE_EXTERNAL` environment variable to your server's public URL:
+Set the `NEXT_PUBLIC_API_BASE_EXTERNAL` environment variable to your server's public URL and enable it:
 
 ```bash
 # Using docker run
 docker run -d --name deeptutor \
+  -e USE_EXTERNAL_API_BASE=true \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001 \
   ... other options ...
   ghcr.io/hkuds/deeptutor:latest
 
 # Or in .env file
+USE_EXTERNAL_API_BASE=true
 NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001
 ```
 
@@ -1331,6 +1335,7 @@ NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001
 ```bash
 # If using backend port 9001
 -e BACKEND_PORT=9001 \
+-e USE_EXTERNAL_API_BASE=true \
 -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:9001
 ```
 

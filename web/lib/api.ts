@@ -25,7 +25,7 @@ const getApiBaseUrl = (): string => {
   }
 
   // On server-side (inside Docker container), use internal port 8001
-  // On client-side (browser), use the public base URL (localhost:8681)
+  // On client-side (browser), use the public base URL (localhost:8781)
   if (typeof window === "undefined") {
     // Server-side: replace external port with internal backend port
     return publicBase.replace(/:\d+$/, ":8001");

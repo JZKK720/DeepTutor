@@ -19,7 +19,7 @@ Write-Host ""
 Write-Host "Staging files..." -ForegroundColor Yellow
 git add web/lib/api.ts
 git add local_port_update_report.md
-git add scripts/proxy_8681.py
+git add scripts/proxy_8781.py
 
 # Commit with descriptive message
 Write-Host "Committing..." -ForegroundColor Yellow
@@ -27,11 +27,11 @@ git commit -m "fix: SSR port handling for Docker container
 
 - Add runtime detection for SSR vs client-side in web/lib/api.ts
   - Server-side (container): use internal port 8001
-  - Client-side (browser): use external port 8681
+  - Client-side (browser): use external port 8781
 - Update local_port_update_report.md with SSR troubleshooting section
-- Add scripts/proxy_8681.py as temporary workaround for existing containers
+- Add scripts/proxy_8781.py as temporary workaround for existing containers
 
-This fixes the 'Cannot connect to backend at localhost:8681' error
+This fixes the 'Cannot connect to backend at localhost:8781' error
 that occurred during Server-Side Rendering inside Docker.
 
 Closes SSR connection issue when frontend tries to reach backend

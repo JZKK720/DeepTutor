@@ -3,12 +3,12 @@
 TCP Proxy for DeepTutor Docker Container
 
 This script creates a proxy inside the Docker container to forward
-port 8681 to the backend port 8001. This is a workaround for the
+port 8781 to the backend port 8001. This is a workaround for the
 SSR issue where Next.js server-side code tries to connect to
-localhost:8681 which doesn't exist inside the container.
+localhost:8781 which doesn't exist inside the container.
 
 Usage (run inside container):
-    docker cp scripts/proxy_8681.py deeptutor:/app/proxy.py
+    docker cp scripts/proxy_8781.py deeptutor:/app/proxy.py
     docker exec -d deeptutor python3 /app/proxy.py
 
 Note: This is a temporary workaround. The permanent fix is to rebuild
@@ -72,7 +72,7 @@ def handle_client(client_socket, backend_port):
 
 
 def main():
-    listen_port = 8681
+    listen_port = 8781
     backend_port = 8001
     
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

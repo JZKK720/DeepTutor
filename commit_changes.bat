@@ -20,7 +20,7 @@ REM Stage all modified and new files
 echo Staging files...
 git add web/lib/api.ts
 git add local_port_update_report.md
-git add scripts/proxy_8681.py
+git add scripts/proxy_8781.py
 
 REM Commit with descriptive message
 echo Committing...

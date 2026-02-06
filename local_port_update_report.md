@@ -1,7 +1,7 @@
 # DeepTutor Local Port Configuration Update Report
 
 **Generated:** 2026-02-04  
-**Updated:** 2026-02-05  
+**Updated:** 2026-02-06  
 **Purpose:** Document complete port customization to avoid local container conflicts, including SSR fix for Docker
 
 ---
@@ -14,12 +14,12 @@ This report documents the comprehensive port configuration changes made to DeepT
 
 | Category | Files Modified | Key Changes |
 |----------|---------------|-------------|
-| Docker Compose | 1 | Port mappings (8681:8001, 3781:3782), extra_hosts for host.docker.internal |
-| Dockerfile | 1 | Frontend startup script, API base URL (localhost:8681) |
+| Docker Compose | 1 | Port mappings (8781:8001, 3781:3782), extra_hosts for host.docker.internal |
+| Dockerfile | 1 | Frontend startup script, API base URL (localhost:8781) |
 | Environment Config | 3 | Host port documentation, local LLM configuration (Ollama/LM Studio) |
 | LLM Provider Config | 2 | host.docker.internal endpoints (11434, 14321) |
-| Frontend Code | 1 | SSR port handling in `web/lib/api.ts` (8001 internal, 8681 external) |
-| Scripts | 1 | TCP proxy workaround for SSR (proxy_8681.py) |
+| Frontend Code | 1 | SSR port handling in `web/lib/api.ts` (8001 internal, 8781 external) |
+| Scripts | 1 | TCP proxy workaround for SSR (proxy_8781.py) |
 | Documentation | 1 | This comprehensive report |
 
 ---
@@ -31,42 +31,42 @@ This report documents the comprehensive port configuration changes made to DeepT
 | Service | Host Port | Container Port | URL |
 |---------|-----------|----------------|-----|
 | **Frontend** | 3781 | 3782 | http://localhost:3781 |
-| **Backend API** | 8681 | 8001 | http://localhost:8681 |
+| **Backend API** | 8781 | 8001 | http://localhost:8781 |
 | **Ollama** | 11434 | - | http://host.docker.internal:11434 |
 | **LM Studio** | 14321 | - | http://host.docker.internal:14321/v1 |
 
 ### Complete Port Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  HOST MACHINE (Browser/Local LLMs)                                   │
-│  ┌─────────────────────────┐    ┌────────────────────────────────┐  │
-│  │ Frontend: localhost:3781│    │ Ollama: localhost:11434        │  │
-│  │ Backend: localhost:8681 │    │ LM Studio: localhost:14321     │  │
-│  │ API Docs: localhost:8681/docs │ vLLM: localhost:8000       │  │
-│  └─────────────────────────┘    │ llama.cpp: localhost:8080      │  │
-│                                 └────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  DOCKER PORT MAPPING                                                 │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │  Host Port 8681 ──────────────► Container Port 8001 (Backend) │  │
-│  │  Host Port 3781 ──────────────► Container Port 3782 (Frontend)│  │
-│  └───────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  DOCKER CONTAINER INTERNAL                                           │
-│  ┌─────────────────────────────┐    ┌─────────────────────────────┐  │
-│  │ Backend (FastAPI/Uvicorn)   │    │ Frontend (Next.js)          │  │
-│  │ - Binds to: 0.0.0.0:8001    │◄───│ - Binds to: 0.0.0.0:3782    │  │
-│  │ - Healthcheck: localhost    │    │ - API Calls: host.docker.   │  │
-│  │                              │    │   internal:8681             │  │
-│  └─────────────────────────────┘    └─────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────�?
+�? HOST MACHINE (Browser/Local LLMs)                                   �?
+�? ┌─────────────────────────�?   ┌────────────────────────────────�? �?
+�? �?Frontend: localhost:3781�?   �?Ollama: localhost:11434        �? �?
+�? �?Backend: localhost:8781 �?   �?LM Studio: localhost:14321     �? �?
+�? �?API Docs: localhost:8781/docs �?vLLM: localhost:8000       �? �?
+�? └─────────────────────────�?   �?llama.cpp: localhost:8080      �? �?
+�?                                └────────────────────────────────�? �?
+└─────────────────────────────────────────────────────────────────────�?
+                                    �?
+                                    �?
+┌─────────────────────────────────────────────────────────────────────�?
+�? DOCKER PORT MAPPING                                                 �?
+�? ┌───────────────────────────────────────────────────────────────�? �?
+�? �? Host Port 8781 ──────────────�?Container Port 8001 (Backend) �? �?
+�? �? Host Port 3781 ──────────────�?Container Port 3782 (Frontend)�? �?
+�? └───────────────────────────────────────────────────────────────�? �?
+└─────────────────────────────────────────────────────────────────────�?
+                                    �?
+                                    �?
+┌─────────────────────────────────────────────────────────────────────�?
+�? DOCKER CONTAINER INTERNAL                                           �?
+�? ┌─────────────────────────────�?   ┌─────────────────────────────�? �?
+�? �?Backend (FastAPI/Uvicorn)   �?   �?Frontend (Next.js)          �? �?
+�? �?- Binds to: 0.0.0.0:8001    │◄───�?- Binds to: 0.0.0.0:3782    �? �?
+�? �?- Healthcheck: localhost    �?   �?- API Calls: host.docker.   �? �?
+�? �?                             �?   �?  internal:8781             �? �?
+�? └─────────────────────────────�?   └─────────────────────────────�? �?
+└─────────────────────────────────────────────────────────────────────�?
 ```
 
 ---
@@ -75,17 +75,17 @@ This report documents the comprehensive port configuration changes made to DeepT
 
 ### 1. Docker Compose (`docker-compose.yml`)
 
-#### Port Mappings (Host → Container)
+#### Port Mappings (Host �?Container)
 
 | Service | Host Port | Container Port | Purpose |
 |---------|-----------|----------------|---------|
-| **Backend API** | **8681** | 8001 | FastAPI/Uvicorn server |
+| **Backend API** | **8781** | 8001 | FastAPI/Uvicorn server |
 | **Frontend Web** | **3781** | 3782 | Next.js application |
 
 **Configuration:**
 ```yaml
 ports:
-  - "8681:8001"
+  - "8781:8001"
   - "3781:3782"
 ```
 
@@ -96,10 +96,10 @@ ports:
 | **restart** | `unless-stopped` | Auto-restart on crash, Docker restart, or system reboot |
 
 **When it restarts automatically:**
-- ✅ Container crashes unexpectedly
-- ✅ Docker daemon restarts
-- ✅ System reboots
-- ❌ Manually stopped (`docker stop`)
+- �?Container crashes unexpectedly
+- �?Docker daemon restarts
+- �?System reboots
+- �?Manually stopped (`docker stop`)
 
 #### Environment Variables Added
 
@@ -109,7 +109,7 @@ environment:
   - BACKEND_PORT=8001
   - FRONTEND_PORT=3782
   # Host-exposed ports (for frontend API configuration)
-  - HOST_BACKEND_PORT=8681
+  - HOST_BACKEND_PORT=8781
   - HOST_FRONTEND_PORT=3781
 ```
 
@@ -127,8 +127,8 @@ API_BASE="http://localhost:${BACKEND_PORT}"
 
 **After (Fixed):**
 ```bash
-API_BASE="http://host.docker.internal:8681"
-# host.docker.internal:8681 = reaches host port 8681 which maps to container:8001
+API_BASE="http://host.docker.internal:8781"
+# host.docker.internal:8781 = reaches host port 8781 which maps to container:8001
 ```
 
 #### Key Changes
@@ -137,7 +137,7 @@ API_BASE="http://host.docker.internal:8681"
    ```dockerfile
    ENV BACKEND_PORT=8001 \
        FRONTEND_PORT=3782 \
-       HOST_BACKEND_PORT=8681 \
+       HOST_BACKEND_PORT=8781 \
        HOST_FRONTEND_PORT=3781
    ```
 
@@ -150,7 +150,7 @@ API_BASE="http://host.docker.internal:8681"
        API_BASE="$NEXT_PUBLIC_API_BASE"
    else
        # For Docker: Use host.docker.internal to reach backend on host
-       API_BASE="http://host.docker.internal:8681"
+       API_BASE="http://host.docker.internal:8781"
    fi
    ```
 
@@ -171,7 +171,7 @@ API_BASE="http://host.docker.internal:8681"
 # =============================================================================
 # These are the ports you use to access services from your browser/host machine
 # Only change these if you modify the port mappings in docker-compose.yml
-HOST_BACKEND_PORT=8681
+HOST_BACKEND_PORT=8781
 HOST_FRONTEND_PORT=3781
 
 # =============================================================================
@@ -233,19 +233,19 @@ LOCAL_PORTS = [
 | Service | URL | Notes |
 |---------|-----|-------|
 | Frontend Application | http://localhost:3781 | Main UI |
-| Backend API | http://localhost:8681 | Direct API access |
-| API Documentation | http://localhost:8681/docs | Swagger UI |
-| Health Check | http://localhost:8681/ | Container health |
+| Backend API | http://localhost:8781 | Direct API access |
+| API Documentation | http://localhost:8781/docs | Swagger UI |
+| Health Check | http://localhost:8781/ | Container health |
 
 ### Internal Container Access
 
-| From → To | URL | Purpose |
+| From �?To | URL | Purpose |
 |-----------|-----|---------|
-| Frontend → Backend | `http://host.docker.internal:8681` | API calls from browser via container |
-| Container → Ollama | `http://host.docker.internal:11434` | Local LLM access |
-| Container → LM Studio | `http://host.docker.internal:14321` | Local LLM access |
-| Container → vLLM | `http://host.docker.internal:${VLLM_PORT}` | Local LLM access |
-| Container → llama.cpp | `http://host.docker.internal:${LLAMACPP_PORT}` | Local LLM access |
+| Frontend �?Backend | `http://host.docker.internal:8781` | API calls from browser via container |
+| Container �?Ollama | `http://host.docker.internal:11434` | Local LLM access |
+| Container �?LM Studio | `http://host.docker.internal:14321` | Local LLM access |
+| Container �?vLLM | `http://host.docker.internal:${VLLM_PORT}` | Local LLM access |
+| Container �?llama.cpp | `http://host.docker.internal:${LLAMACPP_PORT}` | Local LLM access |
 
 ---
 
@@ -255,8 +255,8 @@ LOCAL_PORTS = [
 
 | Platform | `host.docker.internal` Support | Notes |
 |----------|-------------------------------|-------|
-| **Docker Desktop (Windows)** | ✅ Native | Works out of the box |
-| **Docker Desktop (Mac)** | ✅ Native | Works out of the box |
+| **Docker Desktop (Windows)** | �?Native | Works out of the box |
+| **Docker Desktop (Mac)** | �?Native | Works out of the box |
 | **Docker Engine (Linux)** | ⚠️ Manual | Add to docker-compose.yml: |
 
 **For Linux Docker Engine:**
@@ -271,9 +271,9 @@ services:
 
 | Scenario | URL | Result |
 |----------|-----|--------|
-| `localhost:8001` (container) | Container's own port 8001 | ❌ Backend binds to 8001, but frontend runs in browser |
-| `localhost:8681` (container) | Container's port 8681 | ❌ Not mapped internally |
-| `host.docker.internal:8681` | Host machine's port 8681 | ✅ Correct - host:8681 → container:8001 |
+| `localhost:8001` (container) | Container's own port 8001 | �?Backend binds to 8001, but frontend runs in browser |
+| `localhost:8781` (container) | Container's port 8781 | �?Not mapped internally |
+| `host.docker.internal:8781` | Host machine's port 8781 | �?Correct - host:8781 �?container:8001 |
 
 ---
 
@@ -283,14 +283,14 @@ services:
 
 | Port | Usage | Configurable |
 |------|-------|--------------|
-| **8681** | Backend API (Host) | ❌ Fixed in docker-compose.yml |
-| **3781** | Frontend Web (Host) | ❌ Fixed in docker-compose.yml |
+| **8781** | Backend API (Host) | �?Fixed in docker-compose.yml |
+| **3781** | Frontend Web (Host) | �?Fixed in docker-compose.yml |
 | 8001 | Backend API (Container) | ⚠️ Via BACKEND_PORT env |
 | 3782 | Frontend Web (Container) | ⚠️ Via FRONTEND_PORT env |
-| 11434 | Ollama | ✅ Via OLLAMA_PORT env |
-| 14321 | LM Studio | ✅ Via LMSTUDIO_PORT env |
-| 8000 | vLLM | ✅ Via VLLM_PORT env |
-| 8080 | llama.cpp | ✅ Via LLAMACPP_PORT env |
+| 11434 | Ollama | �?Via OLLAMA_PORT env |
+| 14321 | LM Studio | �?Via LMSTUDIO_PORT env |
+| 8000 | vLLM | �?Via VLLM_PORT env |
+| 8080 | llama.cpp | �?Via LLAMACPP_PORT env |
 
 ### Common Conflicting Services
 
@@ -364,7 +364,7 @@ EMBEDDING_DIMENSION=768
 ### LM Studio Setup
 
 **1. Enable local network access:**
-- Open LM Studio → Developer tab
+- Open LM Studio �?Developer tab
 - Enable "Run on Local Network"
 - Set port to `14321` (customized)
 - Restart server
@@ -401,12 +401,12 @@ curl http://localhost:11434/api/tags
 docker exec deeptutor curl http://host.docker.internal:11434/api/tags
 ```
 
-### To Change Host Ports (8681, 3781)
+### To Change Host Ports (8781, 3781)
 
 Edit `docker-compose.yml`:
 ```yaml
 ports:
-  - "YOUR_PORT:8001"  # Instead of 8681:8001
+  - "YOUR_PORT:8001"  # Instead of 8781:8001
   - "YOUR_PORT:3782"  # Instead of 3781:3782
 ```
 
@@ -414,14 +414,14 @@ Then update `HOST_BACKEND_PORT` and `HOST_FRONTEND_PORT` environment variables a
 
 ---
 
-## ✅ Verification Checklist
+## �?Verification Checklist
 
 After starting DeepTutor with the new configuration:
 
 ### Basic Functionality
 - [ ] Frontend accessible at http://localhost:3781
-- [ ] Backend API docs at http://localhost:8681/docs
-- [ ] Health check passes: `curl http://localhost:8681/`
+- [ ] Backend API docs at http://localhost:8781/docs
+- [ ] Health check passes: `curl http://localhost:8781/`
 - [ ] Frontend can communicate with backend (test a chat/solve request)
 
 ### Local LLM Providers (if configured)
@@ -431,7 +431,7 @@ After starting DeepTutor with the new configuration:
 - [ ] llama.cpp reachable (if using): `docker exec deeptutor curl host.docker.internal:${LLAMACPP_PORT}`
 
 ### Log Verification
-- [ ] Frontend logs show: "Using Docker localhost API URL: http://localhost:8681"
+- [ ] Frontend logs show: "Using Docker localhost API URL: http://localhost:8781"
 - [ ] Backend logs show: "Starting FastAPI backend on port 8001"
 - [ ] No connection errors in frontend logs when making API calls
 - [ ] SSR works correctly (knowledge base page loads without network errors)
@@ -444,15 +444,15 @@ After starting DeepTutor with the new configuration:
 
 **Error:**
 ```
-Bind for 0.0.0.0:8681 failed: port is already allocated
+Bind for 0.0.0.0:8781 failed: port is already allocated
 ```
 
 **Solution:**
 ```bash
 # Find what's using the port
-lsof -i :8681
+lsof -i :8781
 # or
-netstat -ano | findstr :8681  # Windows
+netstat -ano | findstr :8781  # Windows
 
 # Either kill the process or change the port in docker-compose.yml
 ```
@@ -464,19 +464,19 @@ netstat -ano | findstr :8681  # Windows
 - "Connection refused" errors in browser console
 
 **Checks:**
-1. Verify backend is running: `curl http://localhost:8681/`
+1. Verify backend is running: `curl http://localhost:8781/`
 2. Check frontend logs: `docker logs deeptutor | grep Frontend`
-3. Ensure API_BASE is set correctly (should be `host.docker.internal:8681`)
+3. Ensure API_BASE is set correctly (should be `host.docker.internal:8781`)
 
-### Issue: SSR - "Cannot connect to backend at localhost:8681"
+### Issue: SSR - "Cannot connect to backend at localhost:8781"
 
 **Symptoms:**
-- Error on knowledge base page: `Network error: Cannot connect to backend at http://localhost:8681/`
+- Error on knowledge base page: `Network error: Cannot connect to backend at http://localhost:8781/`
 - Happens during Server-Side Rendering (SSR) inside Docker container
 
 **Root Cause:**
-- Next.js SSR runs inside the container and tries to connect to `localhost:8681`
-- Port 8681 is only mapped on the **host**, not inside the container
+- Next.js SSR runs inside the container and tries to connect to `localhost:8781`
+- Port 8781 is only mapped on the **host**, not inside the container
 - Inside container, backend is only available on port 8001
 
 **Solutions:**
@@ -488,7 +488,7 @@ docker compose up -d --build
 ```
 
 **Option 2: Temporary workaround (without rebuild)**
-Start a proxy inside the container to forward port 8681→8001:
+Start a proxy inside the container to forward port 8781�?001:
 ```bash
 # Copy proxy script to container
 docker cp proxy.py deeptutor:/app/proxy.py
@@ -497,7 +497,7 @@ docker cp proxy.py deeptutor:/app/proxy.py
 docker exec -d deeptutor python3 /app/proxy.py
 
 # Verify it works
-docker exec deeptutor curl -s http://localhost:8681/
+docker exec deeptutor curl -s http://localhost:8781/
 ```
 
 **Option 3: Modify `web/lib/api.ts`**
@@ -554,7 +554,7 @@ network_mode: host
 | `src/services/llm/utils.py` | Env var support | Dynamic port configuration |
 | `src/services/llm/config.py` | Environment loading | LLM configuration from env vars |
 | `web/lib/api.ts` | +15 lines | SSR port handling for Docker |
-| `scripts/proxy_8681.py` | New file | TCP proxy workaround for SSR (temporary) |
+| `scripts/proxy_8781.py` | New file | TCP proxy workaround for SSR (temporary) |
 
 ### Documentation Files
 
@@ -568,8 +568,8 @@ network_mode: host
 
 ### 2026-02-04 - Initial Port Customization
 
-- **Fixed:** Docker host ports changed to 8681 (backend) and 3781 (frontend)
-- **Fixed:** Frontend API base URL now uses `host.docker.internal:8681`
+- **Fixed:** Docker host ports changed to 8781 (backend) and 3781 (frontend)
+- **Fixed:** Frontend API base URL now uses `host.docker.internal:8781`
 - **Added:** `HOST_BACKEND_PORT` and `HOST_FRONTEND_PORT` environment variables
 - **Updated:** Ollama endpoint to use `host.docker.internal:11434`
 - **Updated:** LM Studio endpoint to use `host.docker.internal:14321`
@@ -579,19 +579,19 @@ network_mode: host
 
 ### 2026-02-04 - Docker Configuration Fix
 
-- **Fixed:** `start-frontend.sh` to properly use `host.docker.internal:8681` instead of `localhost`
-- **Added:** `HOST_BACKEND_PORT=8681` and `HOST_FRONTEND_PORT=3781` to docker-compose environment
+- **Fixed:** `start-frontend.sh` to properly use `host.docker.internal:8781` instead of `localhost`
+- **Added:** `HOST_BACKEND_PORT=8781` and `HOST_FRONTEND_PORT=3781` to docker-compose environment
 - **Updated:** Comments in docker-compose.yml to clarify port usage
 - **Updated:** .env.example and .env.example_CN with host port documentation
 
 ### 2026-02-05 - SSR (Server-Side Rendering) Fix
 
 - **Fixed:** `web/lib/api.ts` to handle SSR inside Docker container correctly
-  - Client-side (browser): Uses `localhost:8681` (host port)
+  - Client-side (browser): Uses `localhost:8781` (host port)
   - Server-side (container): Uses `localhost:8001` (internal port)
-- **Problem:** Next.js SSR was trying to connect to `localhost:8681` inside container, but only port 8001 exists internally
+- **Problem:** Next.js SSR was trying to connect to `localhost:8781` inside container, but only port 8001 exists internally
 - **Solution:** Added runtime check `typeof window === "undefined"` to detect SSR and switch to internal port
-- **Workaround:** For existing containers without rebuild, a TCP proxy can forward port 8681→8001 inside the container
+- **Workaround:** For existing containers without rebuild, a TCP proxy can forward port 8781�?001 inside the container
 
 ### 2026-02-05 - Local LLM Configuration Update
 
@@ -604,6 +604,25 @@ network_mode: host
 - **Added:** `extra_hosts` to docker-compose.yml for `host.docker.internal` support
 - **Updated:** LM Studio port from default to customized `14321`
 - **Note:** Ollama/LM Studio must bind to `0.0.0.0` (not just `127.0.0.1`) for Docker to access
+
+### 2026-02-06 - Backend Port Changed (8681 → 8781)
+
+- **Changed:** Backend API host port from `8681` to `8781` to avoid conflicts with other services
+- **Updated:** All configuration files (`docker-compose.yml`, `.env`, `.env.example`, `.env.example_CN`)
+- **Updated:** `Dockerfile` default API_BASE URL
+- **Updated:** `web/lib/api.ts` comment
+- **Renamed:** `scripts/proxy_8681.py` → `scripts/proxy_8781.py`
+- **Updated:** `commit_changes.ps1` and `commit_changes.bat` references
+- **Updated:** This report (`local_port_update_report.md`) with new port information
+
+### 2026-02-06 - Cloudflare Tunnel Configuration
+
+- **Added:** External API base URL for Cloudflare tunnel deployment
+  - Domain: `https://itutor.cubecloud.io`
+  - Frontend: `https://itutor.cubecloud.io/` (port 3781)
+  - Backend API: `https://itutor.cubecloud.io/api/v1/*` (port 8781)
+  - Configuration: `NEXT_PUBLIC_API_BASE_EXTERNAL=https://itutor.cubecloud.io`
+  - Note: Backend routes already include `/api/v1` prefix, so no additional path needed in base URL
 
 ---
 
@@ -627,7 +646,7 @@ network_mode: host
 ```bash
 # Copy the example file (choose one)
 cp .env.example .env          # English version
-cp .env.example_CN .env       # Chinese version (中文版)
+cp .env.example_CN .env       # Chinese version (中文�?
 ```
 
 ### Step 2: Start Container (Minimum Setup)
@@ -650,7 +669,7 @@ docker logs -f deeptutor-docker-deeptutor-1
 docker compose -f docker-compose.yml -p deeptutor-docker logs -f
 
 # Test backend (should return: {"message":"Welcome to DeepTutor API"})
-curl http://localhost:8681/
+curl http://localhost:8781/
 
 # Open frontend in browser
 http://localhost:3781
@@ -683,10 +702,10 @@ docker compose -f docker-compose.yml -p deeptutor-docker restart
 
 | Component | Status | Note |
 |-----------|--------|------|
-| Container | ✅ Runs | Shows warnings for missing keys |
-| Frontend | ✅ Accessible | http://localhost:3781 |
-| Backend | ✅ Responds | http://localhost:8681 |
-| AI Features | ❌ Not working | Need valid API keys |
+| Container | �?Runs | Shows warnings for missing keys |
+| Frontend | �?Accessible | http://localhost:3781 |
+| Backend | �?Responds | http://localhost:8781 |
+| AI Features | �?Not working | Need valid API keys |
 
 ---
 
